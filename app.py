@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 import pandas as pd
 import yfinance as yf
@@ -72,5 +77,5 @@ with col2:
 # ---------------- Disclaimer ----------------
 st.caption(
     "⚠️ This tool is for educational and analytical purposes only. "
-    "It does not constitute investment advice or a recommendation to trade securities."
+    "It does not constitute investment advice."
 )
