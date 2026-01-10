@@ -21,9 +21,17 @@ client_key = st.selectbox(
 client = clients[client_key]
 
 @st.cache_data
+@st.cache_data
 def load_market_data():
     tickers = ["SPY", "AGG", "VEA", "GLD"]
-    return yf.download(tickers, start="2019-01-01")["Adj Close"].dropna()
+    data = yf.download(tickers, start="2019-01-01", auto_adjust=True)
+
+    # If data has multiple columns (OHLC), take Close
+    if isinstance(data.columns, pd.MultiIndex):
+        data = data["Close"]
+
+    return data.dropna()
+
 
 prices = load_market_data()
 
