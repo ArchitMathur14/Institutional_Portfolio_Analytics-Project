@@ -150,4 +150,27 @@ st.pyplot(fig)
 # ------------------- GRAPH 2: MAX RETURN COMPARISON -------------------
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_gr_
+ax.plot(db_growth["Year"], db_growth["Max Growth"], label="DB Portfolio")
+ax.plot(dc_growth["Year"], dc_growth["Max Growth"], label="DC Portfolio")
+ax.plot(endowment_growth["Year"], endowment_growth["Max Growth"], label="Endowment Portfolio")
+
+ax.set_xlabel("Years")
+ax.set_ylabel("Portfolio Value (₹)")
+ax.set_title("10-Year Growth Under Optimistic Scenario")
+ax.legend()
+ax.grid(True)
+
+st.pyplot(fig)
+
+
+# ------------------- INSIGHTS -------------------
+st.markdown("""
+### Key Takeaways
+- **DB portfolios** prioritise stability and predictable growth.
+- **DC portfolios** balance growth and risk through diversified exposure.
+- **Endowment portfolios** benefit most from long-term compounding but carry higher volatility.
+""")
+
+
+# ------------------- FOOTER -------------------
+st.caption("Educational use only. Not investment advice.")
