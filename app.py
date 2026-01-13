@@ -106,32 +106,29 @@ st.write(performance)
 
 st.subheader("10-Year Fund Growth Projections")
 
-def simulate_fund_growth(initial_amount, annual_return, years=10):
-    timeline = np.arange(0, years + 1)
-    growth = initial_amount * (1 + annual_return) ** timeline
-
-    return pd.DataFrame({
-        "Year": timeline,
-        "Growth": growth
-    })
-
-
+# Shared time axis (FIXES ALL ISSUES)
 years = 10
+years_array = np.arange(0, years + 1)
 
-# Return assumptions
-db_min, db_max = 0.04, 0.06
-dc_min, dc_max = 0.06, 0.09
-end_min, end_max = 0.08, 0.12
+def simulate_fund_growth(initial_amount, annual_return, years_array):
+    return initial_amount * (1 + annual_return) ** years_array
 
-# Growth simulations
-db_min_growth = simulate_fund_growth(investment_amount, db_min, years)
-db_max_growth = simulate_fund_growth(investment_amount, db_max, years)
 
-dc_min_growth = simulate_fund_growth(investment_amount, dc_min, years)
-dc_max_growth = simulate_fund_growth(investment_amount, dc_max, years)
+# ------------------- RETURN ASSUMPTIONS -------------------
+db_min_return, db_max_return = 0.04, 0.06
+dc_min_return, dc_max_return = 0.06, 0.09
+end_min_return, end_max_return = 0.08, 0.12
 
-end_min_growth = simulate_fund_growth(investment_amount, end_min, years)
-end_max_growth = simulate_fund_growth(investment_amount, end_max, years)
+
+# ------------------- GROWTH CALCULATIONS -------------------
+db_min_values = simulate_fund_growth(investment_amount, db_min_return, years_array)
+db_max_values = simulate_fund_growth(investment_amount, db_max_return, years_array)
+
+dc_min_values = simulate_fund_growth(investment_amount, dc_min_return, years_array)
+dc_max_values = simulate_fund_growth(investment_amount, dc_max_return, years_array)
+
+end_min_values = simulate_fund_growth(investment_amount, end_min_return, years_array)
+end_max_values = simulate_fund_growth(investment_amount, end_max_return, years_array)
 
 
 # ------------------- GRAPH 1: MAX RETURN SCENARIO -------------------
@@ -139,9 +136,9 @@ st.subheader("10-Year Growth Projection – Maximum Return Scenario")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_years, db_max_values, label="DB Portfolio")
-ax.plot(dc_years, dc_max_values, label="DC Portfolio")
-ax.plot(end_years, end_max_values, label="Endowment Portfolio")
+ax.plot(years_array, db_max_values, label="DB Portfolio")
+ax.plot(years_array, dc_max_values, label="DC Portfolio")
+ax.plot(years_array, end_max_values, label="Endowment Portfolio")
 
 ax.set_xlabel("Years")
 ax.set_ylabel("Portfolio Value (₹)")
@@ -157,9 +154,9 @@ st.subheader("10-Year Growth Projection – Minimum Return Scenario")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_years, db_min_values, label="DB Portfolio")
-ax.plot(dc_years, dc_min_values, label="DC Portfolio")
-ax.plot(end_years, end_min_values, label="Endowment Portfolio")
+ax.plot(years_array, db_min_values, label="DB Portfolio")
+ax.plot(years_array, dc_min_values, label="DC Portfolio")
+ax.plot(years_array, end_min_values, label="Endowment Portfolio")
 
 ax.set_xlabel("Years")
 ax.set_ylabel("Portfolio Value (₹)")
@@ -173,8 +170,8 @@ st.pyplot(fig)
 # ------------------- INSIGHTS -------------------
 st.markdown("""
 ### Key Takeaways
-- **DB portfolios** prioritise stability and predictable outcomes.
-- **DC portfolios** balance growth and risk across asset classes.
+- **DB portfolios** focus on capital preservation and predictable growth.
+- **DC portfolios** balance risk and return for long-term wealth accumulation.
 - **Endowment portfolios** maximise long-term compounding with higher volatility.
 """)
 
