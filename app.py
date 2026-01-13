@@ -106,57 +106,64 @@ st.write(performance)
 
 st.subheader("10-Year Fund Growth Projections")
 
-def simulate_fund_growth(initial_amount, min_return, max_return, years=10):
+def simulate_fund_growth(initial_amount, annual_return, years=10):
     timeline = np.arange(0, years + 1)
-    min_growth = initial_amount * (1 + min_return) ** timeline
-    max_growth = initial_amount * (1 + max_return) ** timeline
+    growth = initial_amount * (1 + annual_return) ** timeline
 
     return pd.DataFrame({
         "Year": timeline,
-        "Min Growth": min_growth,
-        "Max Growth": max_growth
+        "Growth": growth
     })
 
 
 years = 10
 
-# Assumptions
-db_growth = simulate_fund_growth(investment_amount, 0.04, 0.06, years)
-dc_growth = simulate_fund_growth(investment_amount, 0.06, 0.09, years)
-endowment_growth = simulate_fund_growth(investment_amount, 0.08, 0.12, years)
+# Return assumptions
+db_min, db_max = 0.04, 0.06
+dc_min, dc_max = 0.06, 0.09
+end_min, end_max = 0.08, 0.12
+
+# Growth simulations
+db_min_growth = simulate_fund_growth(investment_amount, db_min, years)
+db_max_growth = simulate_fund_growth(investment_amount, db_max, years)
+
+dc_min_growth = simulate_fund_growth(investment_amount, dc_min, years)
+dc_max_growth = simulate_fund_growth(investment_amount, dc_max, years)
+
+end_min_growth = simulate_fund_growth(investment_amount, end_min, years)
+end_max_growth = simulate_fund_growth(investment_amount, end_max, years)
 
 
-# ------------------- GRAPH 1: MIN vs MAX SCENARIOS -------------------
+# ------------------- GRAPH 1: MAX RETURN SCENARIO -------------------
+st.subheader("10-Year Growth Projection – Maximum Return Scenario")
+
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_growth["Year"], db_growth["Min Growth"], "--", label="DB – Min")
-ax.plot(db_growth["Year"], db_growth["Max Growth"], label="DB – Max")
-
-ax.plot(dc_growth["Year"], dc_growth["Min Growth"], "--", label="DC – Min")
-ax.plot(dc_growth["Year"], dc_growth["Max Growth"], label="DC – Max")
-
-ax.plot(endowment_growth["Year"], endowment_growth["Min Growth"], "--", label="Endowment – Min")
-ax.plot(endowment_growth["Year"], endowment_growth["Max Growth"], label="Endowment – Max")
+ax.plot(db_max_growth["Year"], db_max_growth["Growth"], label="DB Portfolio")
+ax.plot(dc_max_growth["Year"], dc_max_growth["Growth"], label="DC Portfolio")
+ax.plot(end_max_growth["Year"], end_max_growth["Growth"], label="Endowment Portfolio")
 
 ax.set_xlabel("Years")
 ax.set_ylabel("Portfolio Value (₹)")
-ax.set_title("10-Year Growth Projections: Min vs Max Scenarios")
+ax.set_title("Optimistic Scenario (Maximum Returns)")
 ax.legend()
 ax.grid(True)
 
 st.pyplot(fig)
 
 
-# ------------------- GRAPH 2: MAX RETURN COMPARISON -------------------
+# ------------------- GRAPH 2: MIN RETURN SCENARIO -------------------
+st.subheader("10-Year Growth Projection – Minimum Return Scenario")
+
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_growth["Year"], db_growth["Max Growth"], label="DB Portfolio")
-ax.plot(dc_growth["Year"], dc_growth["Max Growth"], label="DC Portfolio")
-ax.plot(endowment_growth["Year"], endowment_growth["Max Growth"], label="Endowment Portfolio")
+ax.plot(db_min_growth["Year"], db_min_growth["Growth"], label="DB Portfolio")
+ax.plot(dc_min_growth["Year"], dc_min_growth["Growth"], label="DC Portfolio")
+ax.plot(end_min_growth["Year"], end_min_growth["Growth"], label="Endowment Portfolio")
 
 ax.set_xlabel("Years")
 ax.set_ylabel("Portfolio Value (₹)")
-ax.set_title("10-Year Growth Under Optimistic Scenario")
+ax.set_title("Conservative Scenario (Minimum Returns)")
 ax.legend()
 ax.grid(True)
 
@@ -166,9 +173,9 @@ st.pyplot(fig)
 # ------------------- INSIGHTS -------------------
 st.markdown("""
 ### Key Takeaways
-- **DB portfolios** prioritise stability and predictable growth.
-- **DC portfolios** balance growth and risk through diversified exposure.
-- **Endowment portfolios** benefit most from long-term compounding but carry higher volatility.
+- **DB portfolios** prioritise stability and predictable outcomes.
+- **DC portfolios** balance growth and risk across asset classes.
+- **Endowment portfolios** maximise long-term compounding with higher volatility.
 """)
 
 
