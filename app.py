@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
+import numpy as np
 
 from institutional_portfolio_analytics_project.portfolio.clients import clients
 from institutional_portfolio_analytics_project.portfolio.optimizer import optimize_portfolio
@@ -56,10 +57,7 @@ performance = calculate_portfolio_performance(prices, weights)
 
 
 # ------------------- ALLOCATION CALCULATIONS -------------------
-# Convert weights (0–1) to %
 allocation_percentage = {k: v * 100 for k, v in weights.items()}
-
-# Convert weights to actual ₹ allocation
 allocation_amount = {k: v * investment_amount for k, v in weights.items()}
 
 
@@ -67,7 +65,6 @@ allocation_amount = {k: v * investment_amount for k, v in weights.items()}
 st.subheader("Recommended Portfolio Allocation (%)")
 
 fig, ax = plt.subplots()
-
 ax.bar(allocation_percentage.keys(), allocation_percentage.values())
 ax.set_ylabel("Allocation (%)")
 ax.set_ylim(0, 100)
@@ -82,7 +79,6 @@ st.pyplot(fig)
 st.subheader("Investment Allocation (₹)")
 
 fig, ax = plt.subplots()
-
 ax.bar(allocation_amount.keys(), allocation_amount.values())
 ax.set_ylabel("Amount Invested (₹)")
 
@@ -103,12 +99,15 @@ for asset, amount in allocation_amount.items():
 st.subheader("Portfolio Performance Metrics")
 st.write(performance)
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+
+# ============================================================
+# 10-YEAR FUND GROWTH SIMULATION (DB, DC, ENDOWMENT)
+# ============================================================
+
+st.subheader("10-Year Fund Growth Projections")
+
 def simulate_fund_growth(initial_amount, min_return, max_return, years=10):
     timeline = np.arange(0, years + 1)
-
     min_growth = initial_amount * (1 + min_return) ** timeline
     max_growth = initial_amount * (1 + max_return) ** timeline
 
@@ -119,18 +118,36 @@ def simulate_fund_growth(initial_amount, min_return, max_return, years=10):
     })
 
 
-# ------------------- FOOTER -------------------
-st.caption("Educational use only. Not investment advice.")
-st.subheader("Investment Strategy Overview")
+years = 10
 
-st.markdown("""
-**Growth Assets (Equities)**  
-Focused on long-term capital appreciation through US and international equity exposure.
+# Assumptions
+db_growth = simulate_fund_growth(investment_amount, 0.04, 0.06, years)
+dc_growth = simulate_fund_growth(investment_amount, 0.06, 0.09, years)
+endowment_growth = simulate_fund_growth(investment_amount, 0.08, 0.12, years)
 
-**Stability Assets (Bonds)**  
-Designed to reduce volatility and provide steady returns through fixed-income investments.
 
-**Diversification & Hedge (Gold)**  
-Provides protection against inflation, market stress, and geopolitical uncertainty.
-""")
+# ------------------- GRAPH 1: MIN vs MAX SCENARIOS -------------------
+fig, ax = plt.subplots(figsize=(9, 5))
 
+ax.plot(db_growth["Year"], db_growth["Min Growth"], "--", label="DB – Min")
+ax.plot(db_growth["Year"], db_growth["Max Growth"], label="DB – Max")
+
+ax.plot(dc_growth["Year"], dc_growth["Min Growth"], "--", label="DC – Min")
+ax.plot(dc_growth["Year"], dc_growth["Max Growth"], label="DC – Max")
+
+ax.plot(endowment_growth["Year"], endowment_growth["Min Growth"], "--", label="Endowment – Min")
+ax.plot(endowment_growth["Year"], endowment_growth["Max Growth"], label="Endowment – Max")
+
+ax.set_xlabel("Years")
+ax.set_ylabel("Portfolio Value (₹)")
+ax.set_title("10-Year Growth Projections: Min vs Max Scenarios")
+ax.legend()
+ax.grid(True)
+
+st.pyplot(fig)
+
+
+# ------------------- GRAPH 2: MAX RETURN COMPARISON -------------------
+fig, ax = plt.subplots(figsize=(9, 5))
+
+ax.plot(db_gr_
