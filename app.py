@@ -106,3 +106,16 @@ st.write(performance)
 
 # ------------------- FOOTER -------------------
 st.caption("Educational use only. Not investment advice.")
+st.subheader("Investment Strategy Overview")
+
+st.markdown("""
+**Growth Assets (Equities)**  
+Focused on long-term capital appreciation through US and international equity exposure.
+
+**Stability Assets (Bonds)**  
+Designed to reduce volatility and provide steady returns through fixed-income investments.
+
+**Diversification & Hedge (Gold)**  
+Provides protection against inflation, market stress, and geopolitical uncertainty.
+""")
+
