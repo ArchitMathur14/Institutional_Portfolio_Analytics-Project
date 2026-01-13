@@ -103,6 +103,21 @@ for asset, amount in allocation_amount.items():
 st.subheader("Portfolio Performance Metrics")
 st.write(performance)
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+def simulate_fund_growth(initial_amount, min_return, max_return, years=10):
+    timeline = np.arange(0, years + 1)
+
+    min_growth = initial_amount * (1 + min_return) ** timeline
+    max_growth = initial_amount * (1 + max_return) ** timeline
+
+    return pd.DataFrame({
+        "Year": timeline,
+        "Min Growth": min_growth,
+        "Max Growth": max_growth
+    })
+
 
 # ------------------- FOOTER -------------------
 st.caption("Educational use only. Not investment advice.")
