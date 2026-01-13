@@ -139,9 +139,9 @@ st.subheader("10-Year Growth Projection – Maximum Return Scenario")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_max_growth["Year"], db_max_growth["Growth"], label="DB Portfolio")
-ax.plot(dc_max_growth["Year"], dc_max_growth["Growth"], label="DC Portfolio")
-ax.plot(end_max_growth["Year"], end_max_growth["Growth"], label="Endowment Portfolio")
+ax.plot(db_years, db_max_values, label="DB Portfolio")
+ax.plot(dc_years, dc_max_values, label="DC Portfolio")
+ax.plot(end_years, end_max_values, label="Endowment Portfolio")
 
 ax.set_xlabel("Years")
 ax.set_ylabel("Portfolio Value (₹)")
@@ -157,9 +157,9 @@ st.subheader("10-Year Growth Projection – Minimum Return Scenario")
 
 fig, ax = plt.subplots(figsize=(9, 5))
 
-ax.plot(db_min_growth["Year"], db_min_growth["Growth"], label="DB Portfolio")
-ax.plot(dc_min_growth["Year"], dc_min_growth["Growth"], label="DC Portfolio")
-ax.plot(end_min_growth["Year"], end_min_growth["Growth"], label="Endowment Portfolio")
+ax.plot(db_years, db_min_values, label="DB Portfolio")
+ax.plot(dc_years, dc_min_values, label="DC Portfolio")
+ax.plot(end_years, end_min_values, label="Endowment Portfolio")
 
 ax.set_xlabel("Years")
 ax.set_ylabel("Portfolio Value (₹)")
