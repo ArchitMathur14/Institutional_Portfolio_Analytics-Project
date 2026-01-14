@@ -14,8 +14,8 @@ st.set_page_config(
 st.title("📉 Scenario-Based Portfolio Stress Testing Dashboard")
 
 st.markdown("""
-This dashboard evaluates **portfolio resilience under extreme macroeconomic scenarios**  
-using **historically calibrated, scenario-based stress assumptions**.
+This tool demonstrates **scenario-based portfolio stress testing and tactical rebalancing**  
+using **historically informed, rule-based assumptions**.
 """)
 
 # ============================================================
@@ -31,9 +31,9 @@ scenario = st.selectbox(
 
 investment_amount = st.number_input(
     "Investment Amount (₹)",
-    min_value=10_000,
-    step=10_000,
-    value=500_000
+    min_value=100_000,
+    step=100_000,
+    value=1_000_000
 )
 
 years = 10
@@ -42,101 +42,89 @@ years_array = np.arange(0, years + 1)
 # ============================================================
 # HELPER FUNCTIONS
 # ============================================================
-def compound_path(initial, yearly_returns):
+def compound_path(initial, returns):
     values = [initial]
-    for r in yearly_returns:
+    for r in returns:
         values.append(values[-1] * (1 + r))
     return np.array(values)
 
+def tactical_signal(price_path):
+    peak = price_path[0]
+    signals = []
+
+    for year, price in enumerate(price_path):
+        drawdown = (price - peak) / peak
+
+        if drawdown <= -0.25:
+            signals.append("BUY (Deep Value Zone)")
+        elif price >= peak * 1.10:
+            signals.append("SELL (Profit Taking)")
+        else:
+            signals.append("HOLD")
+
+    return signals
+
 # ============================================================
-# SCENARIO DEFINITIONS (OPTION A – STYLISED, CALIBRATED)
+# SCENARIO DEFINITIONS
 # ============================================================
 
 if scenario == "Financial Crisis":
     st.subheader("📉 Financial Crisis Scenario")
 
-    st.markdown("""
-    **Description:**  
-    Models a severe global recession similar to historical financial crises,  
-    characterised by sharp equity drawdowns followed by gradual recovery.
-    """)
-
-    # Portfolio allocation (resilience-focused)
-    allocation = {
-        "Equities (ETFs)": 0.40,
-        "Bonds": 0.45,
-        "Gold / Defensive Assets": 0.15
+    assets = {
+        "S&P 500 ETF (Equity)": 0.40,
+        "US Aggregate Bond ETF": 0.45,
+        "Gold ETF": 0.15
     }
 
-    # Phase-based annual returns (stylised)
     yearly_returns = (
-        [-0.35] +                # Shock year
-        [-0.05, 0.03] +           # Stabilisation
-        [0.07] * (years - 3)      # Recovery
+        [-0.35] +
+        [-0.05, 0.03] +
+        [0.07] * (years - 3)
     )
 
 elif scenario == "Geopolitical Conflict":
     st.subheader("🌍 Geopolitical Conflict Scenario")
 
-    st.markdown("""
-    **Description:**  
-    Models prolonged geopolitical tensions causing market volatility,  
-    inflationary pressure, and uneven asset performance.
-    """)
-
-    allocation = {
-        "Equities (ETFs)": 0.50,
-        "Bonds": 0.30,
-        "Gold / Defensive Assets": 0.20
+    assets = {
+        "S&P 500 ETF (Equity)": 0.50,
+        "US Aggregate Bond ETF": 0.30,
+        "Gold ETF": 0.20
     }
 
     yearly_returns = (
-        [-0.15] +                # Initial uncertainty shock
-        [0.02, 0.01, 0.03] +      # Adjustment phase
-        [0.06] * (years - 4)     # New normal
+        [-0.15] +
+        [0.02, 0.01, 0.03] +
+        [0.06] * (years - 4)
     )
 
 # ============================================================
-# PORTFOLIO ALLOCATION DISPLAY
+# ALLOCATION DISPLAY
 # ============================================================
-st.subheader("📊 Scenario-Optimised Portfolio Allocation")
+st.subheader("📊 Recommended Portfolio Allocation")
 
 alloc_df = pd.DataFrame({
-    "Asset Class": allocation.keys(),
-    "Allocation (%)": [v * 100 for v in allocation.values()]
+    "Asset": assets.keys(),
+    "Allocation (%)": [v * 100 for v in assets.values()],
+    "Amount Invested (₹)": [v * investment_amount for v in assets.values()]
 })
 
-fig_alloc = go.Figure(
-    data=[
-        go.Bar(
-            x=alloc_df["Asset Class"],
-            y=alloc_df["Allocation (%)"],
-            text=alloc_df["Allocation (%)"].round(1).astype(str) + "%",
-            textposition="auto"
-        )
-    ]
-)
-
-fig_alloc.update_layout(
-    yaxis_title="Allocation (%)",
-    yaxis_range=[0, 100]
-)
-
-st.plotly_chart(fig_alloc, use_container_width=True)
+st.dataframe(alloc_df, use_container_width=True)
 
 # ============================================================
-# PORTFOLIO GROWTH SIMULATION
+# PORTFOLIO SIMULATION
 # ============================================================
 portfolio_values = compound_path(investment_amount, yearly_returns)
+signals = tactical_signal(portfolio_values)
 
 # ============================================================
-# TIME-SERIES STRESS GRAPH
+# PORTFOLIO VALUE GRAPH
 # ============================================================
-st.subheader("📈 Portfolio Value Under Stress Scenario")
+st.subheader("📈 Portfolio Value Under Scenario")
 
-fig_growth = go.Figure()
+fig = go.Figure()
 
-fig_growth.add_trace(go.Scatter(
+fig.add_trace(go.Scatter(
     x=years_array,
     y=portfolio_values,
     mode="lines+markers",
@@ -144,42 +132,54 @@ fig_growth.add_trace(go.Scatter(
     hovertemplate="Year %{x}<br>Value ₹%{y:,.0f}<extra></extra>"
 ))
 
-fig_growth.update_layout(
+fig.update_layout(
     xaxis_title="Years",
     yaxis_title="Portfolio Value (₹)",
     hovermode="x unified"
 )
 
-st.plotly_chart(fig_growth, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 # ============================================================
-# KEY RISK METRICS
+# BUY / SELL SIGNALS
 # ============================================================
-st.subheader("⚠️ Key Risk Insights")
+st.subheader("🛠 Tactical Buy / Sell Guidance")
 
-drawdown = (portfolio_values.min() - investment_amount) / investment_amount * 100
-final_value = portfolio_values[-1]
+signal_df = pd.DataFrame({
+    "Year": years_array,
+    "Portfolio Value (₹)": portfolio_values.round(0),
+    "Suggested Action": signals
+})
 
-metrics = {
-    "Maximum Drawdown (%)": f"{drawdown:.1f}%",
-    "Portfolio Value After Shock (Year 1)": f"₹{portfolio_values[1]:,.0f}",
-    "Portfolio Value After 10 Years": f"₹{final_value:,.0f}"
-}
-
-st.write(metrics)
+st.dataframe(signal_df, use_container_width=True)
 
 # ============================================================
-# INTERPRETATION (CONSULTING-STYLE)
+# EXPLANATION (CRITICAL)
 # ============================================================
 st.markdown("""
-### How to interpret this analysis
-- This is **not a forecast**, but a **stress-test scenario**
-- Returns are **phase-based and historically calibrated**
-- The objective is to assess **resilience and recovery**, not maximise returns
-- Portfolio construction prioritises **survivability under stress**
+### How the buy / sell logic works
+- **BUY** signals trigger when the portfolio falls **25% or more from peak**
+- **SELL** signals trigger after recovery beyond **pre-shock levels**
+- This represents **rule-based rebalancing**, not market timing
+- The objective is to **improve recovery outcomes**, not predict bottoms
 """)
+
+# ============================================================
+# RISK INSIGHTS
+# ============================================================
+drawdown = (portfolio_values.min() - investment_amount) / investment_amount * 100
+
+st.markdown("### Key Risk Insights")
+st.write({
+    "Maximum Drawdown (%)": f"{drawdown:.1f}%",
+    "Lowest Portfolio Value": f"₹{portfolio_values.min():,.0f}",
+    "Portfolio Value After 10 Years": f"₹{portfolio_values[-1]:,.0f}"
+})
 
 # ============================================================
 # FOOTER
 # ============================================================
-st.caption("Educational use only. Scenario-based stress testing. Not investment advice.")
+st.caption(
+    "Educational use only. Scenario-based stress testing and rule-based rebalancing. "
+    "Not investment advice."
+)
